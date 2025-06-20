@@ -4,8 +4,36 @@ import requests
 import json
 import re
 
-# Replace with your Groq API key
-GROQ_API_KEY = "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"
+from dotenv import load_dotenv
+load_dotenv()  # This loads the variables from .env into your environment
+
+import os
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+if GROQ_API_KEY is None:
+    raise ValueError("Please set the GROQ_API_KEY environment variable.")
+
+learning_resources = {
+    "Python": "Consider checking out 'Python for Everybody' on Coursera.",
+    "Data Analysis": "Try the 'Data Analysis with Pandas' course on DataCamp.",
+    "Machine Learning": "Try Andrew Ng's Machine Learning course on Coursera.",
+    "Communication": "Practice public speaking with Toastmasters or online courses.",
+    # Add more relevant skills and links as you like
+}
+
+def highlight_skills(text, skills):
+    for skill in skills:
+        # Case-insensitive replacement with HTML highlight tag
+        text = text.replace(skill, f'<mark style="background-color:#c8f7c5;">{skill}</mark>')
+    return text
+
+import os
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+if GROQ_API_KEY is None:
+    raise ValueError("Please set the GROQ_API_KEY environment variable.")
 
 # Set page config
 st.set_page_config(
@@ -76,16 +104,15 @@ def extract_text_from_pdf(pdf_file):
 # Groq + LLaMA 3 call
 def analyze_resume(text, job_description):
     prompt = f"""
-You are a career coach AI. Analyze the resume below and compare it to the job description.
+You are a career coach AI. Analyze the resume below and compare it to the job description. 
 Give a score out of 100 for how well the resume matches the job description.
 List missing key skills or experience from the resume compared to the job description.
+List matched key skills from the resume that align with the job description.
 
-Respond ONLY in JSON format like this:
-{{
-  "score": 85,
-  "missing_skills": ["Skill A", "Skill B"]
-}}
-
+Respond in JSON format with keys: 
+"score" (int), 
+"missing_skills" (list), 
+"matched_skills" (list).
 Resume:
 {text}
 
@@ -127,11 +154,17 @@ if uploaded_file and job_description:
         resume_text = extract_text_from_pdf(uploaded_file)
         result = analyze_resume(resume_text, job_description)
 
-    st.markdown('<div class="score">✅ Match Score: ' + str(result.get("score", "N/A")) + '</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="score">✅ Match Score: {result.get("score", "N/A")}</div>', unsafe_allow_html=True)
 
-    st.subheader("❌ Missing Skills / Experience")
+    st.subheader("📄 Resume Text with Highlighted Skills:")
+    resume_highlighted = highlight_skills(resume_text, result.get("matched_skills", []))
+    st.markdown(resume_highlighted, unsafe_allow_html=True)
+
+    st.subheader("❌ Missing Skills / Experience with Advice:")
     for skill in result.get("missing_skills", []):
-        st.markdown(f'<div class="skill">- {skill}</div>', unsafe_allow_html=True)
+        advice = learning_resources.get(skill, "")
+        st.markdown(f'<div class="skill">- {skill} {advice}</div>', unsafe_allow_html=True)
+
 
 # Footer
 st.markdown("---")
