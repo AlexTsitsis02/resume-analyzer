@@ -5,7 +5,7 @@ import json
 import re
 
 from dotenv import load_dotenv
-load_dotenv()  # This loads the variables from .env into your environment
+load_dotenv() 
 
 import os
 
@@ -19,12 +19,10 @@ learning_resources = {
     "Data Analysis": "Try the 'Data Analysis with Pandas' course on DataCamp.",
     "Machine Learning": "Try Andrew Ng's Machine Learning course on Coursera.",
     "Communication": "Practice public speaking with Toastmasters or online courses.",
-    # Add more relevant skills and links as you like
 }
 
 def highlight_skills(text, skills):
     for skill in skills:
-        # Case-insensitive replacement with HTML highlight tag
         text = text.replace(skill, f'<mark style="background-color:#c8f7c5;">{skill}</mark>')
     return text
 
